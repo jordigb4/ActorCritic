@@ -42,7 +42,6 @@ class TD3:
         #Initialize d, the updating delay constant.
         self.d = 2
 
-        # TODO (2): Initialize the Actor and Critic networks. 
         # Initialize Critics networks and targets network.s Should be named self.Critic1 and self.Critic2
         # Now we have twin networks
         self.Critic_1 = CriticNetwork(self.obs_dim, self.act_dim).to(device)
@@ -60,7 +59,6 @@ class TD3:
 
         copy_target( self.Actor_target,self.Actor) # Copy the weights of the Actor to the target Actor
 
-        # END TODO (2)
 
         # Define the optimizers for the actor and critic networks as proposed in the paper
         self.optim_critic_1 = optim.Adam(self.Critic_1.parameters(), lr=0.001)
@@ -115,7 +113,6 @@ class TD3:
                 episode_rewards = []
                     
             if len(self.replay_buffer) > self.batch_size:
-                # TODO (6): if there is enouygh data in the replay buffer, sample a batch and perform an optimization step
                 # Batch is sampled from the replay buffer and containes a list of tuples (s, a, r, s', term, trunc)
                 batch = self.replay_buffer.get(self.batch_size)
                 # Get the batch data
@@ -144,16 +141,13 @@ class TD3:
 
 
 
-                # END TODO (6)
 
-                    # TODO (7): Sync the target networks with soft updates and tau=0.001 according to details of the DDPG paper
                     #Now we update two critic targets
                     soft_update(self.Actor_target,self.Actor, tau=0.005)
                     soft_update(self.Critic_target_1, self.Critic_1,  tau=0.005)
                     soft_update(self.Critic_target_2, self.Critic_2, tau=0.005)
 
 
-            # END TODO (7)
 
             if timestep % (timesteps-1) == 0:
                 episode_reward_plot(all_rewards, timestep, window_size=7, step_size=1)
@@ -165,7 +159,6 @@ class TD3:
     
 
     def choose_action(self, s):
-        # TODO (3) Implement the function to choose an action given a state. It is deterministic because exploration is added
         # by the OrnsteinUhlenbeckActionNoise in the main loop.
 
         # Convert the state to a tensor
@@ -177,7 +170,6 @@ class TD3:
             a = self.Actor(s).detach().cpu().numpy()
 
         self.Actor.train() # Set the actor network to training mode
-        # END TODO (3)
         return a
 
 
@@ -190,7 +182,6 @@ class TD3:
         the expected Q-values (q_expected) and the target Q-values (target).
         """
         
-        # TODO (4): Implement MSBE calculation (need to sample from replay buffer first). Notice that it is VERY 
         # similar to the DQN loss.
 
         # Implement MSBE calculation (need to sample from replay buffer first)
@@ -205,28 +196,23 @@ class TD3:
         terminated_batch = torch.FloatTensor(terminated_batch).to(dtype=torch.long).to(device).unsqueeze(1)
         truncated_batch = torch.FloatTensor(truncated_batch).to(dtype=torch.long).to(device).unsqueeze(1)
 
-        # TODO: Compute the Q-values for the next_state_batch to compute the target
         with torch.no_grad(): # No need to compute gradients
             a_next_batch = self.Actor_target(next_state_batch)
             q_targets_next_1   = self.Critic_target_1(next_state_batch,a_next_batch)
             q_targets_next_2   = self.Critic_target_2(next_state_batch,a_next_batch)
 
-            # TODO Compute targets. Target for Q(s,a) is standard but when episode terminates target should be only the reward.
             #Now we choose the pessimistic target critic network
             target = reward_batch + ((1-terminated_batch) *self.gamma* torch.min(q_targets_next_1,q_targets_next_2))
 
-        # TODO Compute the Q-values for the state_batch according to the Critic network
         # We calculate the loss for both critic networks
         q_expected_1 = self.Critic_1(state_batch,action_batch)
         q_expected_2 = self.Critic_2(state_batch,action_batch)
 
-        # TODO Compute the MSE loss between q_expected and target
         criterion = nn.MSELoss()
 
         loss_1 = criterion(q_expected_1, target)
         loss_2 = criterion(q_expected_2,target)#MSE
 
-        # END TODO (4)
         return loss_1,loss_2
     
 
@@ -237,7 +223,6 @@ class TD3:
         :param batch: The batch parameter is a tuple containing the data for computing the loss.
         :return: the loss, which is the negative mean of the expected Q-values.
         """
-        # TODO (5) implement the actor loss. You have to sample from the replay buffer first a set of states.
         # The loss is the negative mean of the expect ed Q-values.
 
         # Get the data. Should be 6 numpy arrays of size batch_size
@@ -261,7 +246,6 @@ class TD3:
             param.requires_grad = True
 
 
-        # END TODO (5)
         return loss
 
 
