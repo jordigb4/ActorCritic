@@ -39,7 +39,7 @@ class DDPG:
         self.batch_size = batch_size
         self.gamma = gamma
 
-        # TODO (2): Initialize the Actor and Critic networks.
+
 
         # Initialize Critic network and target network. Should be named self.Critic
         self.Critic = CriticNetwork(self.obs_dim, self.act_dim).to(device)
@@ -55,7 +55,7 @@ class DDPG:
         # Copy the weights from the Actor network to the Actor target network
         copy_target(self.Actor_target,self.Actor)
 
-        # END TODO (2)
+
 
         # Define the optimizers for the actor and critic networks as proposed in the paper
         self.optim_critic = optim.Adam(self.Critic.parameters(), lr=0.001, weight_decay=0.01)
@@ -107,7 +107,7 @@ class DDPG:
                 episode_rewards = []
                     
             if len(self.replay_buffer) > self.batch_size:
-                # TODO (6): if there is enouygh data in the replay buffer, sample a batch and perform an optimization step
+
                 # Batch is sampled from the replay buffer and containes a list of tuples (s, a, r, s', term, trunc)
                 batch = self.replay_buffer.get(self.batch_size)
                 # Get the batch data
@@ -132,14 +132,13 @@ class DDPG:
 
 
 
-                # END TODO (6)
 
-            # TODO (7): Sync the target networks with soft updates and tau=0.001 according to details of the DDPG paper
+
             soft_update(self.Actor_target,self.Actor, tau=0.001) #Update the Actor target network
             soft_update(self.Critic_target, self.Critic,  tau=0.001) #Update the Critic target network
 
 
-            # END TODO (7)
+
 
             if timestep % (timesteps-1) == 0:
                 episode_reward_plot(all_rewards, timestep, window_size=7, step_size=1)
@@ -151,8 +150,7 @@ class DDPG:
     
 
     def choose_action(self, s):
-        # TODO (3) Implement the function to choose an action given a state. It is deterministic because exploration is added
-        # by the OrnsteinUhlenbeckActionNoise in the main loop.
+
 
         self.Actor.eval() #Set the Actor network to evaluation mode
         with torch.no_grad(): #No need to compute gradients
@@ -164,7 +162,7 @@ class DDPG:
             a = self.Actor(s).detach().cpu().numpy()
 
         self.Actor.train() #Set the Actor network to training mode
-        # END TODO (3)
+
         return a
 
 
@@ -177,8 +175,7 @@ class DDPG:
         the expected Q-values (q_expected) and the target Q-values (target).
         """
         
-        # TODO (4): Implement MSBE calculation (need to sample from replay buffer first). Notice that it is VERY 
-        # similar to the DQN loss.
+
 
         # Implement MSBE calculation (need to sample from replay buffer first)
         # Get the data. Should be 6 numpy arrays of size batch_size
@@ -192,22 +189,18 @@ class DDPG:
         terminated_batch = torch.FloatTensor(terminated_batch).to(dtype=torch.long).to(device).unsqueeze(1)
         truncated_batch = torch.FloatTensor(truncated_batch).to(dtype=torch.long).to(device).unsqueeze(1)
 
-        # TODO: Compute the Q-values for the next_state_batch to compute the target
+
         with torch.no_grad(): #No need to compute gradients
             a_next_batch = self.Actor_target(next_state_batch)
             q_targets_next   = self.Critic_target(next_state_batch,a_next_batch)
 
-            # TODO Compute targets. Target for Q(s,a) is standard but when episode terminates target should be only the reward.
             target = reward_batch + ((1-terminated_batch) *self.gamma*q_targets_next)
 
-        # TODO Compute the Q-values for the state_batch according to the DQN network
         q_expected = self.Critic(state_batch,action_batch)
 
-        # TODO Compute the MSE loss between q_expected and target
         criterion = nn.MSELoss()
         loss = criterion(q_expected, target)  #MSE
 
-        # END TODO (4)
         return loss
     
 
@@ -218,7 +211,6 @@ class DDPG:
         :param batch: The batch parameter is a tuple containing the data for computing the loss.
         :return: the loss, which is the negative mean of the expected Q-values.
         """
-        # TODO (5) implement the actor loss. You have to sample from the replay buffer first a set of states.
         # The loss is the negative mean of the expect ed Q-values.
 
         # Get the data. Should be 6 numpy arrays of size batch_size
@@ -243,7 +235,6 @@ class DDPG:
             param.requires_grad = True
 
 
-        # END TODO (5)
         return loss
 
 
