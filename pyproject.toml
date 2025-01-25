@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "lab7-entrega"
+version = "0.1.0"
+description = ""
+authors = ["JordiGB <jordi.granja@strategicplatform.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+torch = "^2.5.1"
+gymnasium = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
